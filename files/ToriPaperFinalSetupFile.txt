@@ -1,0 +1,356 @@
+//The Maximal Tori of Finite Exceptional Groups of Lie Type
+
+//This file contains functions makew, TwistCent, TwistClass and TorusStructure associated to the paper "The Maximal Tori of Finite Exceptional Simple Groups of Lie Type".
+
+//The functions TwistClass, TwistCent and TorusStructure which follow can be applied to compute torus structures and associated information in groups of ANY Lie type.
+
+
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+//The following function creates specific class representatives shown in the tables and returns the element as either a matrix of permutation. 
+
+//The function takes as arguments: 
+
+//W : A string, that must be one of "G2", "F4", "E6", "E7", "E8", corresponding to which Weyl group the representative you desire lies inside. If an invalid string is given, 0 is returned. For the twisted groups, the classes are represented by elements that lie inside the non-twisted Weyl groups, and so if you wish to construct a class representative from a twisted Weyl group, W will be the string representing the non-twisted Weyl group.
+
+//R : An adjoint or simply connected root datum corresponding to the string W. If no isogeny type is specified when calling RootDatum(), the default type is adjoint.
+    
+//L : A sequence or indexed set containing the integers corresponding to the root indexes for your required class representative.
+    
+//type : Either "perm" or "mat", depending on if you want your representative to be given as a permutation or matrix respectively. If an invalid string is given, 0 is returned.
+    
+//The function returns your desired class representative either as a permutation or matrix. If "mat" is given as the third argument, then returned is a matrix coerced into ReflectionGroup(W) where W is the string given as the first argument. If "perm" is given, then returned is a permutation coerced into a permutation representation of the desired Weyl group given by the command WeylGroup().
+
+
+makew := function(W,R,L,type);
+    if type eq "perm" then      // working with permutations
+        Wperm := WeylGroup(R);  //permutation representation of the Weyl group
+        w := Id(Wperm);         //initialise w
+        if W eq "E6" then
+            m := map< [1,2,3,4,5,6,18,48,69] -> [1,2,3,4,5,6,14,31,36] | 1->1, 2->2, 3->3, 4->4, 5->5, 6->6, 18->14, 48->31, 69->36 >;  //define map which maps the indexes of the e6 roots living inside the e8 root system to their respective indexes inside the e6 root system;
+        elif W eq "E7" then
+            m := map< [1,2,3,4,5,6,7,17,18,48,61,69,82,97] -> [1,2,3,4,5,6,7,15,16,40,49,53,59,63] | 1->1, 2->2, 3->3, 4->4, 5->5, 6->6, 7->7, 17->15, 18->16, 48->40, 61->49, 69->53, 82->59, 97->63 >; //define map which maps the indexes of the e7 roots living inside the e8 root system to their respective indexes inside the e7 root system;
+        else
+            m := hom<Integers()->Integers()|>; //identity map. if we are not dealing with e6 or e7 then all root indexes already live inside their respective root system
+        end if;
+        for i in L do
+            w:=w*ReflectionPermutation(R,m(i)); //create desired representative by taking products of the permutations corresponding to the roots associated with the mapped indexes of i inside L
+        end for;
+        return Wperm!w; //return the representative as an element of the Weyl group
+    end if;
+
+    if type eq "mat" then       //working with matrices
+        Wmats := ReflectionGroup(R); //matrix representation of the Weyl group
+        w := Id(Wmats); //initialise w
+        if W eq "E6" then
+            m := map< [1,2,3,4,5,6,18,48,69] -> [1,2,3,4,5,6,14,31,36] | 1->1, 2->2, 3->3, 4->4, 5->5, 6->6, 18->14, 48->31, 69->36 >; //define map which maps the indexes of the e6 roots living inside the e8 root system to their respective indexes inside the e6 root system;
+        elif W eq "E7" then
+            m := map< [1,2,3,4,5,6,7,17,18,48,61,69,82,97] -> [1,2,3,4,5,6,7,15,16,40,49,53,59,63] | 1->1, 2->2, 3->3, 4->4, 5->5, 6->6, 7->7, 17->15, 18->16, 48->40, 61->49, 69->53, 82->59, 97->63 >; //define map which maps the indexes of the e7 roots living inside the e8 root system to their respective indexes inside the e7 root system;
+        else
+            m := hom<Integers()->Integers()|>; //identity map. if we are not dealing with e6 or e7 then all root indexes already live inside their respective root system
+        end if;
+        for i in L do
+            w:=w*ReflectionMatrix(R,m(i)); //create desired representative by taking products of the reflection matrices corresponding to the roots associated with the mapped indexes of i inside L
+        end for;
+        return Wmats!w; //return the representative as an element of the Weyl group
+    end if;
+
+    if W notin ["G2", "F4", "E6", "E7", "E8"] then //if invalid string is given return 0
+        "Error : The first argument must be one of: ", "G2", "F4", "E6", "E7", "E8";
+        return 0;
+    end if;
+
+    if type notin ["perm", "mat"] then //if invalid type is given return 0
+        "Error : The third argument must be either mat or perm";
+        return 0;
+    end if;
+end function;
+
+
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+//The following function computes the sigma centraliser of an element of a Weyl group inside a matrix representation. 
+
+//The function takes as arguments:
+
+//R : An irreducible root datum indicating the untwisted type corresponding to the group of interest
+
+//tw : Indicates the diagram automorphism associated to the group of interest; 0 for untwisted, 2 for the triality automorphism on D4, and 1 for each other twisted type,
+
+//w : The element we wish to construct the sigma centraliser of. Must be given as a matrix.
+
+//The function returns the sigma centraliser as a subgroup of the untwisted Weyl group inside the matrix representation.
+
+
+TwistCent := function(R,tw,w);
+W:=ReflectionGroup(R);
+if tw eq 0 then
+	twist:=Id(W);
+	twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+	c := {@@};          //initialise centraliser
+	for i in W do
+		if twist^-1*i*twist^-1*w*i^(-1) eq w then        //loop through Weyl group elements and check whether it belongs in the twisted centraliser
+			Include(~c, i);                     //include the element if the condition is satisfied
+		end if;
+	end for;
+	csub := sub<W|c>;                          //create centraliser as a subgroup
+	return csub;
+end if;
+if tw eq 1 then                                                                // set up the action of the involutive diagram automorphism, case-by-case.
+	if CartanName(R) eq "B2" then
+		twist:=Matrix(Rationals(),2,2,[0,1,1/2,0]);
+		twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+		c := {@@};          //initialise centraliser
+		for i in W do
+			if (twist^-1*i*twist^-1*w*i^(-1))/2 eq w then        //loop through Weyl group elements and check whether it belongs in the twisted centraliser
+				Include(~c, i);                     //include the element if the condition is satisfied
+			end if;
+		end for;
+		csub := sub<W|c>;                          //create centraliser as a subgroup
+		return csub;
+		else if CartanName(R) eq "G2" then
+			twist:=Matrix(Rationals(),2,2,[0,1/3,1,0]);
+			twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+			c := {@@};          //initialise centraliser
+			for i in W do
+				if (twist^-1*i*twist^-1*w*i^(-1))/3 eq w then        //loop through Weyl group elements and check whether it belongs in the twisted centraliser
+					Include(~c, i);                     //include the element if the condition is satisfied
+				end if;
+			end for;
+			csub := sub<W|c>;                          //create centraliser as a subgroup
+			return csub;
+			else if CartanName(R) eq "F4" then
+				twist:=Matrix(Rationals(),4,4,[0,0,0,1,0,0,1,0,0,1/2,0,0,1/2,0,0,0]);
+				twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+				c := {@@};          //initialise centraliser
+				for i in W do
+					if (twist^-1*i*twist^-1*w*i^(-1))/2 eq w then        //loop through Weyl group elements and check whether it belongs in the twisted centraliser
+						Include(~c, i);                     //include the element if the condition is satisfied
+					end if;
+				end for;
+				csub := sub<W|c>;                          //create centraliser as a subgroup
+				return csub;
+				else if CartanName(R)[1] eq "D" then
+					twist:=PermutationMatrix(Integers(),SymmetricGroup(Rank(R))!(Rank(R)-1,Rank(R)));
+					twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+					c := {@@};          //initialise centraliser
+					for i in W do
+						if twist^-1*i*twist^-1*w*i^(-1) eq w then        //loop through Weyl group elements and check whether it belongs in the twisted centraliser
+							Include(~c, i);                     //include the element if the condition is satisfied
+						end if;
+					end for;
+					csub := sub<W|c>;                          //create centraliser as a subgroup
+					return csub;
+				else
+					W:=ReflectionGroup(R);
+					twist:=-LongestElement(W);
+					twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+					c := {@@};          //initialise centraliser
+					for i in W do
+						if twist^-1*i*twist^-1*w*i^(-1) eq w then        //loop through Weyl group elements and check whether it belongs in the twisted centraliser
+							Include(~c, i);                     //include the element if the condition is satisfied
+						end if;
+					end for;
+					csub := sub<W|c>;                          //create centraliser as a subgroup
+					return csub;
+				end if;
+			end if;
+		end if;
+	end if;
+end if;
+if tw eq 2 then                                                               // set up the triality automorphism action on D_4
+	if CartanName(R) eq "D4" then
+		twist:=Matrix(Integers(),4,4,[0,0,1,0,0,1,0,0,0,0,0,1,1,0,0,0]);
+		twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+		c := {@@};          //initialise centraliser
+		for i in W do
+			if twist^-1*i*twist^-1*w*i^(-1) eq w then        //loop through Weyl group elements and check whether it belongs in the twisted centraliser
+				Include(~c, i);                     //include the element if the condition is satisfied
+			end if;
+		end for;
+		csub := sub<W|c>;                          //create centraliser as a subgroup
+		return csub;
+	end if;
+end if;
+end function;
+
+
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+//The following function computes the sigma conjugacy class of a given element inside the untwisted Weyl group. 
+
+//The function takes as argument:
+
+//R : An irreducible root datum indicating the untwisted type corresponding to the group of interest
+
+//tw : Indicates the diagram automorphism associated to the group of interest; 0 for untwisted, 2 for the triality automorphism on D4, and 1 for each other twisted type,
+
+//w : The element we wish to construct the sigma centraliser of. Must be given as a matrix.
+
+//The function returns the sigma-conjugacy class of w inside W as an indexed set.
+
+
+TwistClass := function(R,tw,w);
+W:=ReflectionGroup(R);
+if tw eq 0 then
+	twist:=Id(W);
+	twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+	c := {@@}; //initialise sigma class
+	for i in W do
+		Include(~c, twist^-1*i*(twist^-1)*w*i^(-1)); //loop through Weyl group elements and check whether they should belong in the sigma class
+	end for;
+	return c; //return the class as an indexed set.
+end if;
+if tw eq 1 then                                                                // set up the action of the involutive diagram automorphism, case-by-case.
+	if CartanName(R) eq "B2" then
+		twist:=Matrix(Rationals(),2,2,[0,1,1/2,0]);
+		twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+		c := {@@}; //initialise sigma class
+		for i in W do
+    			Include(~c, (twist^-1*i*(twist^-1)*w*i^(-1))/2); //loop through Weyl group elements and check whether they should belong in the sigma class
+		end for;
+		return c; //return the class as an indexed set.
+		else if CartanName(R) eq "G2" then
+			twist:=Matrix(Rationals(),2,2,[0,1/3,1,0]);
+			twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+			c := {@@}; //initialise sigma class
+			for i in W do
+				Include(~c, (twist^-1*i*(twist^-1)*w*i^(-1))/3); //loop through Weyl group elements and check whether they should belong in the sigma class
+			end for;
+			return c; //return the class as an indexed set.
+			else if CartanName(R) eq "F4" then
+				twist:=Matrix(Rationals(),4,4,[0,0,0,1,0,0,1,0,0,1/2,0,0,1/2,0,0,0]);
+				twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+				c := {@@}; //initialise sigma class
+				for i in W do
+					Include(~c, (twist^-1*i*(twist^-1)*w*i^(-1))/2); //loop through Weyl group elements and check whether they should belong in the sigma class
+				end for;
+				return c; //return the class as an indexed set.
+				else if CartanName(R)[1] eq "D" then
+					twist:=PermutationMatrix(Integers(),SymmetricGroup(Rank(R))!(Rank(R)-1,Rank(R)));
+					twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+					c := {@@}; //initialise sigma class
+					for i in W do
+						Include(~c, twist^-1*i*(twist^-1)*w*i^(-1)); //loop through Weyl group elements and check whether they should belong in the sigma class
+					end for;
+					return c; //return the class as an indexed set.
+				else
+					W:=ReflectionGroup(R);
+					twist:=-LongestElement(W);
+					twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+					c := {@@}; //initialise sigma class
+					for i in W do
+						Include(~c, twist^-1*i*(twist^-1)*w*i^(-1)); //loop through Weyl group elements and check whether they should belong in the sigma class
+					end for;
+					return c; //return the class as an indexed set.
+				end if;
+			end if;
+		end if;
+	end if;
+end if;
+if tw eq 2 then                                                               // set up the triality automorphism action on D_4
+	if CartanName(R) eq "D4" then
+		twist:=Matrix(Integers(),4,4,[0,0,1,0,0,1,0,0,0,0,0,1,1,0,0,0]);
+		twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+		c := {@@}; //initialise sigma class
+		for i in W do
+			Include(~c, twist^-1*i*(twist^-1)*w*i^(-1)); //loop through Weyl group elements and check whether they should belong in the sigma class
+		end for;
+		return c; //return the class as an indexed set.
+	end if;
+end if;
+end function;
+
+
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+//The following function computes the structure of a maximal torus corresponding to a given element in a given finite group of Lie type.
+
+//The function takes as argument: 
+
+//R : An irreducible root datum indicating the untwisted type corresponding to the group of interest
+
+//tw : Indicates the diagram automorphism; 0 for untwisted, 2 for the triality automorphism on D4, and 1 for each other twisted type,
+
+//w :  An element of the Weyl group of R (in the standard matrix representation) corresponding to the torus of interest,
+
+//q :  The prime power associated to the group of interest.
+
+//The function outputs a sequence x containing the torsion coefficients of the maximal torus of interest.
+//The structure of the maximal torus is then the direct product of the cyclic groups of order x[i], over i.  
+
+
+function TorusStructure(R,tw,w,q);
+structure:=[];  
+if tw eq 0 then                                          // in this case the diagram automorphism acts trivially
+	W:=ReflectionGroup(R);
+	B:=MatrixAlgebra(Integers(),Rank(R));                        
+	a,b,c:=SmithForm(q*Id(B)*(B!w)-Id(B));                       // diagonalize the relation matrix evaluated entrywise at q
+	for i:=1 to Rank(R) do
+		if not a[i][i] eq 1 then                                    
+			Append(~structure,a[i][i]);                                         // read the nontrivial torsion coefficients from the diagonal matrix   
+		end if;
+	end for;
+	return structure;
+	else if tw eq 1 then                                                                // set up the action of the involutive diagram automorphism, case-by-case.
+		if CartanName(R) eq "B2" then
+			twist:=Matrix(Rationals(),2,2,[0,1,1/2,0]);
+			pow:=Integers()!Log(2,q);
+			q:=2^(Integers()!((pow+1)/2));
+			else if CartanName(R) eq "G2" then
+				twist:=Matrix(Rationals(),2,2,[0,1/3,1,0]);
+				pow:=Integers()!Log(3,q);
+				q:=3^(Integers()!((pow+1)/2));
+				else if CartanName(R) eq "F4" then
+					twist:=Matrix(Rationals(),4,4,[0,0,0,1,0,0,1,0,0,1/2,0,0,1/2,0,0,0]);
+					pow:=Integers()!Log(2,q);
+					q:=2^(Integers()!((pow+1)/2));
+					else if CartanName(R)[1] eq "D" then
+						twist:=PermutationMatrix(Integers(),SymmetricGroup(Rank(R))!(Rank(R)-1,Rank(R)));
+						else
+							W:=ReflectionGroup(R);
+							twist:=-LongestElement(W);
+						end if;
+					end if;
+				end if;
+			end if;
+			W:=ReflectionGroup(R);
+			twist:=MatrixAlgebra(Rationals(),Rank(R))!twist;
+			B:=MatrixAlgebra(Integers(),Rank(R));                              // diagonalize the relation matrix evaluated entrywise at q
+			a,b,c:=SmithForm(B!(q*Id(B)*(B!w)*twist-Id(B)));  
+			for i:=1 to Rank(R) do
+				if not a[i][i] eq 1 then
+					Append(~structure,a[i][i]);                        // reads the torsion coefficients from the diagonal matrix 
+				end if;
+			end for;
+			return structure;
+			else if tw eq 2 then 
+				if CartanName(R) eq "D4" then                              // set up the triality automorphism action on D_4
+						twist:=MatrixAlgebra(Rationals(),Rank(R))!Matrix(Integers(),4,4,[0,0,1,0,0,1,0,0,0,0,0,1,1,0,0,0]);
+				end if;
+				W:=ReflectionGroup(R);
+				B:=MatrixAlgebra(Integers(),Rank(R));
+				a,b,c:=SmithForm(B!(q*Id(B)*(B!w)*twist-Id(B)));         // diagonalize the relation matrix evaluated entrywise at q
+				for i:=1 to Rank(R) do
+					if not a[i][i] eq 1 then
+						Append(~structure,a[i][i]);              // read the torsion coefficients from the diagonal matrix
+					end if;
+				end for;
+				return structure;                                        // output a sequence containing the nontrivial torsion coefficients for the maximal torus
+			end if;                                                   
+		end if;
+	end if;
+end function;
