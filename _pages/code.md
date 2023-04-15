@@ -14,3 +14,10 @@ author_profile: true
 
 [$F_4(2)$](https://drive.google.com/file/d/1QZVkYBV5kKjtatkWWOOr6tCJaSLrUBao/view?usp=drivesdk)
 
+
+
+##### The Maximal Tori of Finite Exceptional Groups of Lie Type
+
+[ReadMeFile](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/ReadMeFile.txt)
+
+[ToriPaperFinalSetupFile](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/ToriPaperFinalSetupFile.txt)
