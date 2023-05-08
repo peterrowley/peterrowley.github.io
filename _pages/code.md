@@ -26,4 +26,4 @@ author_profile: true
 
 ##### Centralizers of Elements in Finite Groups
 
-[Zip](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/CentralizerFiles.zip)
+[Zip file](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/CentralizerFiles.zip)
