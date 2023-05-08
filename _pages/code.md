@@ -21,3 +21,9 @@ author_profile: true
 [ReadMeFile](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/ReadMeFile.txt)
 
 [ToriPaperFinalSetupFile](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/ToriPaperFinalSetupFile.txt)
+
+
+
+##### Centralizers of Elements in Finite Groups
+
+[Zip](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/CentralizerFiles.zip)
