@@ -26,4 +26,10 @@ author_profile: true
 
 ##### Centralizers of Elements in Finite Groups
 
-[Zip file](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/CentralizerFiles.zip)
+[Centralizer Zip file](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/CentralizerFiles.zip)
+
+
+
+##### The Semisimple Elements of E_8(2)
+
+[Semisimple Zip file](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/SemiSimpleZip.zip)
