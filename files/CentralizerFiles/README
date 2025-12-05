@@ -1,0 +1,42 @@
+##Files
+
+The file "FindCent.txt" is the main code for the procedure.
+The directory "TestCase" contains the files "E8setup.txt" and "CG7B.txt".
+
+
+
+##Usage
+
+To load the procedure into Magma, place the file FindCent.txt into a directory accessible to Magma and use the command 
+
+load SPECIFYDIRECTORY/FindCent.txt
+
+
+Alternatively you can simply copy and paste the contents of FindCent.txt directly into a Magma session.
+
+
+
+##TestCase
+
+A test case is provided to demonstrate the usage of the procedure. This test case involves the production of the centralizer of a 7B element in the finite group of Lie-type E8(2).
+
+To use the test files, first begin a Magma session. Then load the file E8setup.txt, which constructs E8(2) as "G", followed by CG7B.txt, which provides a copy of the centralizer of a specific 7B element as "CG7B" (this is used only for the final step of comparison of module composition factors).
+
+Next, choose a 7B element in G for which to construct the centralizer. For test purposes this can be a random 7B element - to find such an element search randomly in G for an element of order 7 with fixed space dimension 38 (the Magma command Dimension(Eigenspace(x,1)) gives the fixed space dimension of an element x).
+
+Now load the main code FindCent.txt as described above, and then run using the command
+
+FindCent(G,g,H,l,k,m,e)
+
+For a successful run in this context we suggest the following parameter choices (note that "G" is already initialised as E8(2)):
+
+g = the 7B element to be centralized
+H = CG7B
+l = 10
+k = 3
+m = 20
+e = 20
+
+Different parameter values can of course be experimented with, but these choices should produce a positive output within a few seconds. In particular, the choice of k = 3 is sensible as this is dimension of the smallest possible non-trivial irreducible GF(2)-module for a cyclic group of order 7.
+
+After the procedure concludes, the output (i.e. the centralizer of g) is named "Cg". The procedure can easily be modified to a Magma function if desired.
