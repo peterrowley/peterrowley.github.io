@@ -33,3 +33,9 @@ author_profile: true
 ##### The Semisimple Elements of E_8(2)
 
 [Semisimple Zip file](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/SemiSimpleZip.zip)
+
+
+
+##### On String C-Group Representations for Covers of the Sporadic Simple Groups
+
+[C-String Zip File](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/C-Strings%20of%20Covers%20of%20Sporadic%20Simple%20Groups.zip))
