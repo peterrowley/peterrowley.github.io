@@ -4,6 +4,9 @@ permalink: /code/
 author_profile: true
 ---
 
+##### Large Rank Abstract Regular Polytopes for Sporadic Simple Groups
+[zip file](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/Large%20Rank%20Abstract%20Regular%20Polytopes%20-%20Sporadic%20Simple%20Groups%20-%20Files.zip)
+
 ##### Commuting Involution Graphs of Certain Exceptional Groups of Lie-type - code
 
 [$E_6(2)$](https://github.com/peterrowley/peterrowley.github.io/blob/master/files/The%20commuting%20graph%20of%20E6(2).zip)
